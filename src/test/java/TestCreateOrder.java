@@ -7,6 +7,7 @@ import org.junit.Test;
 import steps.OrderSteps;
 import steps.UserSteps;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static constants.RandomData.*;
@@ -16,7 +17,8 @@ public class TestCreateOrder {
     private Order order;
     private OrderSteps orderSteps;
     private String accessToken;
-
+    private List<String> ingredients;
+    private List<String> wrongIngredients;
     @Before
     public void setUp() {
         userSteps = new UserSteps();
@@ -24,12 +26,18 @@ public class TestCreateOrder {
         userSteps.createUser(randomEmail, randomPassword, randomName);
         ValidatableResponse responseLogin = userSteps.login(randomEmail, randomPassword);
         accessToken = userSteps.getAccessToken(responseLogin);
+        ingredients = new ArrayList<>();
+        ingredients.add("61c0c5a71d1f82001bdaaa6d");
+        ingredients.add("61c0c5a71d1f82001bdaaa6f");
+        ingredients.add("61c0c5a71d1f82001bdaaa73");
+        wrongIngredients = new ArrayList<>();
+        wrongIngredients.add("123zxc");
     }
 
     @Test
     @DisplayName("Создание заказа с авторизацией")
     public void createOrderWithAuthorizationSuccess() {
-        order = new Order(List.of("61c0c5a71d1f82001bdaaa6d", "61c0c5a71d1f82001bdaaa6f", "61c0c5a71d1f82001bdaaa73"));
+        order = new Order(ingredients);
         ValidatableResponse responseCreateAuth = orderSteps.createOrderWithToken(accessToken, order);
         userSteps.checkAnswerSuccess(responseCreateAuth);
     }
@@ -45,7 +53,7 @@ public class TestCreateOrder {
     @Test
     @DisplayName("Создание заказа с авторизацией с неправильным хэшем ингредиента")
     public void createOrderAuthWithWrongHashInternalServerError() {
-        order = new Order(List.of("123zxc"));
+        order = new Order(wrongIngredients);
         ValidatableResponse responseCreateAuth = orderSteps.createOrderWithToken(accessToken, order);
         orderSteps.checkAnswerWithWrongHash(responseCreateAuth);
     }
@@ -53,7 +61,7 @@ public class TestCreateOrder {
     @Test
     @DisplayName("Создание заказа без авторизации")
     public void createOrderWithoutAuthorizationSuccess() {
-        order = new Order(List.of("61c0c5a71d1f82001bdaaa6d", "61c0c5a71d1f82001bdaaa6f", "61c0c5a71d1f82001bdaaa73"));
+        order = new Order(ingredients);
         ValidatableResponse responseCreateAuth = orderSteps.createOrderWithoutToken(order);
         userSteps.checkAnswerSuccess(responseCreateAuth);
     }
@@ -69,7 +77,7 @@ public class TestCreateOrder {
     @Test
     @DisplayName("Создание заказа без авторизации с неправильным хэшем ингредиента")
     public void createOrderNonAuthWithWrongHashInternalServerError() {
-        order = new Order(List.of("123zxc"));
+        order = new Order(wrongIngredients);
         ValidatableResponse responseCreateAuth = orderSteps.createOrderWithoutToken(order);
         orderSteps.checkAnswerWithWrongHash(responseCreateAuth);
     }
